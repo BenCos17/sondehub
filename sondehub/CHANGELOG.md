@@ -1,4 +1,9 @@
 # Changelog
+## 1.0.7
+- Add configurable geofence area alerts using latitude/longitude min/max bounds.
+- Add global automation entities: `Any Radiosonde In Alert Area` and `Last Radiosonde In Alert Area`.
+- Keep per-sonde summary entities while supporting unknown serial IDs ahead of time.
+
 ## 1.0.6
 - Add per-sonde publish rate limiting with new `min_publish_interval` option.
 - Change discovery model to one summary sensor per sonde with full telemetry in attributes.

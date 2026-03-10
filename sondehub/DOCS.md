@@ -16,6 +16,11 @@
 | `mqtt_user` | _(blank)_ | MQTT username (if required). |
 | `mqtt_password` | _(blank)_ | MQTT password (if required). |
 | `min_publish_interval` | `10` | Minimum time in seconds between updates for the same radiosonde. Increase to reduce MQTT traffic. |
+| `area_alert_enabled` | `false` | Enable area/geofence alerts. |
+| `area_lat_min` | `-90` | Minimum latitude of alert area. |
+| `area_lat_max` | `90` | Maximum latitude of alert area. |
+| `area_lon_min` | `-180` | Minimum longitude of alert area. |
+| `area_lon_max` | `180` | Maximum longitude of alert area. |
 | `amateur` | `false` | Set to `true` to also receive amateur high-altitude balloon launches. |
 | `filter_serials` | _(empty)_ | List of specific radiosonde serial numbers to track (e.g. `R3320848`). Leave empty to receive **all** radiosondes globally. |
 
@@ -24,6 +29,11 @@
 For each radiosonde detected, the add-on automatically creates one summary sensor (via MQTT Discovery):
 
 - **Sensor**: `Radiosonde <serial>` with all telemetry fields attached as attributes (altitude, temperature, humidity, latitude, longitude, speed, heading, satellites, battery, frequency, frame, RSSI, uploader, and type)
+
+Global automation entities are also created:
+
+- **Binary sensor**: `Any Radiosonde In Alert Area` turns `on` when at least one sonde is inside the configured area.
+- **Sensor**: `Last Radiosonde In Alert Area` with serial as state and telemetry in attributes.
 
 All entities are grouped under a single **device** named `bencos17_SondeHub`.
 

@@ -18,6 +18,23 @@ configuration:
     description: >-
       Minimum time between MQTT state publishes per radiosonde.
       Increase this to reduce MQTT traffic.
+  area_alert_enabled:
+    name: Enable Area Alerts
+    description: >-
+      Enable geofence alerts when a radiosonde enters the configured
+      latitude/longitude bounding box.
+  area_lat_min:
+    name: Area Latitude Min
+    description: Minimum latitude of alert area (south edge).
+  area_lat_max:
+    name: Area Latitude Max
+    description: Maximum latitude of alert area (north edge).
+  area_lon_min:
+    name: Area Longitude Min
+    description: Minimum longitude of alert area (west edge).
+  area_lon_max:
+    name: Area Longitude Max
+    description: Maximum longitude of alert area (east edge).
   amateur:
     name: Amateur Launches
     description: >-

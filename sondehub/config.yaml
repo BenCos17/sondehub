@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: SondeHub
-version: "1.0.6"
+version: "1.0.7"
 slug: sondehub
 description: >-
   Stream live radiosonde (weather balloon) telemetry from SondeHub to
@@ -18,6 +18,11 @@ options:
   mqtt_user: ""
   mqtt_password: ""
   min_publish_interval: 10
+  area_alert_enabled: false
+  area_lat_min: -90
+  area_lat_max: 90
+  area_lon_min: -180
+  area_lon_max: 180
   amateur: false
   filter_serials: []
 schema:
@@ -26,6 +31,11 @@ schema:
   mqtt_user: str
   mqtt_password: password
   min_publish_interval: int(0,3600)
+  area_alert_enabled: bool
+  area_lat_min: float(-90,90)
+  area_lat_max: float(-90,90)
+  area_lon_min: float(-180,180)
+  area_lon_max: float(-180,180)
   amateur: bool
   filter_serials:
     - str
