@@ -1,4 +1,9 @@
 # Changelog
+## 1.0.4
+- Remove MQTT device tracker discovery to avoid Away/Unknown-only entities.
+- Keep MQTT sensor discovery focused on telemetry entities.
+- Improve cleanup of old retained tracker discovery topics.
+
 ## 1.0.3
 -# fix type just now also
 - Group sensors under one device but seperate entities as it was causing issues in 1.0.1 

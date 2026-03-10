@@ -23,9 +23,8 @@
 For each radiosonde detected, the add-on automatically creates (via MQTT Discovery):
 
 - **Sensors**: Altitude, Temperature, Humidity, Latitude, Longitude, Horizontal Speed, Vertical Speed, Heading, GPS Satellites, Battery Voltage, Frequency, Frame Number, RSSI
-- **Device Tracker**: Shows the radiosonde position on the Home Assistant map
 
-All entities are grouped under a single **device** named `Radiosonde <serial>`.
+All entities are grouped under a single **device** named `bencos17_SondeHub`.
 
 ### Tips
 

@@ -84,10 +84,10 @@ class SondeHubAddon:
         # Single addon device shared by all sensors
         self.addon_device: dict = {
             "identifiers": ["sondehub_addon"],
-            "name": "SondeHub",
+            "name": "bencos17_SondeHub",
             "model": "SondeHub Live Stream",
             "manufacturer": "ProjectHorus",
-            "configuration_url": "https://sondehub.org",
+            "configuration_url": "https://github.com/bencos17/sondehub",
         }
 
     # ------------------------------------------------------------------
@@ -132,6 +132,9 @@ class SondeHubAddon:
         safe = serial.replace("-", "_").replace(" ", "_").lower()
         state_topic = f"sondehub/{safe}/state"
 
+        # Remove old retained tracker discovery if it exists from previous versions.
+        self._publish(f"homeassistant/device_tracker/sondehub/{safe}/config", "", retain=True)
+
         for field, friendly_name, unit, device_class, icon in SENSOR_DEFS:
             cfg: dict = {
                 "name": f"{friendly_name}",
@@ -151,23 +154,6 @@ class SondeHubAddon:
             disc_topic = f"homeassistant/sensor/sondehub/{safe}/{field}/config"
             self._publish(disc_topic, cfg, retain=True)
 
-        # Device tracker so the sonde appears on the map
-        tracker_cfg = {
-            "name": f"{serial}",
-            "unique_id": f"sondehub_{safe}_tracker",
-            "state_topic": state_topic,
-            "value_template": "online",
-            "json_attributes_topic": state_topic,
-            "availability_topic": f"sondehub/{safe}/availability",
-            "source_type": "gps",
-            "device": self.addon_device,
-        }
-        self._publish(
-            f"homeassistant/device_tracker/sondehub/{safe}/config",
-            tracker_cfg,
-            retain=True,
-        )
-        
         # Mark sonde as online
         self._publish(f"sondehub/{safe}/availability", "online", retain=True)
 
