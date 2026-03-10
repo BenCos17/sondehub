@@ -80,6 +80,16 @@ class SondeHubAddon:
         self.announced: set = set()
         self.mqtt_client: mqtt.Client | None = None
         self.stream = None
+        self.all_states: dict = {}  # Track all radiosonde states
+        
+        # Single addon device shared by all sensors
+        self.addon_device: dict = {
+            "identifiers": ["sondehub_addon"],
+            "name": "SondeHub",
+            "model": "SondeHub Live Stream",
+            "manufacturer": "ProjectHorus",
+            "configuration_url": "https://sondehub.org",
+        }
 
     # ------------------------------------------------------------------
     # MQTT helpers
@@ -121,25 +131,17 @@ class SondeHubAddon:
     def _announce_sonde(self, serial: str, payload: dict) -> None:
         """Publish MQTT Discovery configs for a newly seen radiosonde."""
         safe = serial.replace("-", "_").replace(" ", "_").lower()
-        state_topic = f"sondehub/{safe}/state"
-        avail_topic = f"sondehub/{safe}/availability"
-
-        device = {
-            "identifiers": [f"sondehub_{safe}"],
-            "name": f"Radiosonde {serial}",
-            "model": payload.get("subtype", payload.get("type", payload.get("manufacturer", "Radiosonde"))),
-            "manufacturer": payload.get("manufacturer", "Unknown"),
-            "via_device": "sondehub_addon",
-        }
+        state_topic = f"sondehub/state"
+        avail_topic = f"sondehub/availability"
 
         for field, friendly_name, unit, device_class, icon in SENSOR_DEFS:
             cfg: dict = {
-                "name": friendly_name,
+                "name": f"{friendly_name} ({serial})",
                 "unique_id": f"sondehub_{safe}_{field}",
                 "state_topic": state_topic,
-                "value_template": f"{{{{ value_json.{field} | default(none) }}}}",
+                "value_template": f"{{{{ value_json['{serial}'].{field} | default(none) }}}}",
                 "availability_topic": avail_topic,
-                "device": device,
+                "device": self.addon_device,
             }
             if unit:
                 cfg["unit_of_measurement"] = unit
@@ -148,26 +150,26 @@ class SondeHubAddon:
             if icon:
                 cfg["icon"] = icon
 
-            disc_topic = f"homeassistant/sensor/sondehub_{safe}/{field}/config"
+            disc_topic = f"homeassistant/sensor/sondehub/{safe}/{field}/config"
             self._publish(disc_topic, cfg, retain=True)
 
         # Device tracker so the sonde appears on the map
         tracker_cfg = {
             "name": f"Radiosonde {serial}",
             "unique_id": f"sondehub_{safe}_tracker",
+            "state_topic": state_topic,
+            "value_template": f"{{{{ value_json['{serial}'].latitude }}}},{{{{ value_json['{serial}'].longitude }}}}",
             "json_attributes_topic": state_topic,
+            "json_attributes_template": f"{{{{ value_json['{serial}'] | tojson }}}}",
             "availability_topic": avail_topic,
             "source_type": "gps",
-            "device": device,
+            "device": self.addon_device,
         }
         self._publish(
-            f"homeassistant/device_tracker/sondehub_{safe}/config",
+            f"homeassistant/device_tracker/sondehub/{safe}/config",
             tracker_cfg,
             retain=True,
         )
-
-        # Mark the sonde as online
-        self._publish(avail_topic, "online", retain=True)
 
         log.info("Announced new radiosonde: %s", serial)
         self.announced.add(serial)
@@ -197,7 +199,12 @@ class SondeHubAddon:
         state["type"] = message.get("subtype", message.get("type", ""))
         state["uploader"] = message.get("uploader_callsign", "")
 
-        self._publish(f"sondehub/{safe}/state", state)
+        # Update the nested state dict with this radiosonde's data
+        self.all_states[serial] = state
+        
+        # Publish all radiosondes to a single state topic
+        self._publish("sondehub/state", self.all_states)
+        
         log.debug(
             "%s: alt=%sm lat=%s lon=%s",
             serial,
@@ -226,6 +233,9 @@ class SondeHubAddon:
         self._connect_mqtt()
         # Give the MQTT connection a moment to establish before publishing discovery
         time.sleep(2)
+        
+        # Mark addon as online
+        self._publish("sondehub/availability", "online", retain=True)
 
         log.info("Starting SondeHub stream...")
 
