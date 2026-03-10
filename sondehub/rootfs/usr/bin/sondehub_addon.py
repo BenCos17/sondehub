@@ -300,7 +300,7 @@ class SondeHubAddon:
             display_name, device_class, unit, category, icon = ENTITY_CONFIG[entity_name]
             cfg: dict = {
                 "name": display_name,
-                "unique_id": f"sondehub_{safe}_{entity_name}",
+                "unique_id": f"sondehub_sonde_{safe}_{entity_name}",
                 "state_topic": state_topic,
                 "value_template": f"{{{{ value_json.{entity_name} | default('unavailable') }}}}",
                 "availability_topic": f"sondehub/{safe}/availability",
@@ -321,7 +321,7 @@ class SondeHubAddon:
         # Create an info sensor showing last update time
         info_cfg: dict = {
             "name": "Status",
-            "unique_id": f"sondehub_{safe}_status",
+            "unique_id": f"sondehub_sonde_{safe}_status",
             "state_topic": state_topic,
             "value_template": "{{ value_json.status | default('receiving') }}",
             "json_attributes_topic": state_topic,
@@ -336,7 +336,7 @@ class SondeHubAddon:
         # Create a device tracker for location
         tracker_cfg: dict = {
             "name": "Location",
-            "unique_id": f"sondehub_{safe}_location",
+            "unique_id": f"sondehub_sonde_{safe}_location",
             "state_topic": state_topic,
             "value_template": "{{ 'home' if value_json.altitude else 'unknown' }}",
             "json_attributes_topic": state_topic,
