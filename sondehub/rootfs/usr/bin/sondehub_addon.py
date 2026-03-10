@@ -151,7 +151,7 @@ class SondeHubAddon:
             if icon:
                 cfg["icon"] = icon
 
-            disc_topic = f"homeassistant/sensor/sondehub/{safe}/{field}/config"
+            disc_topic = f"homeassistant/sensor/sondehub/{safe}_{field}/config"
             self._publish(disc_topic, cfg, retain=True)
 
         # Mark sonde as online
