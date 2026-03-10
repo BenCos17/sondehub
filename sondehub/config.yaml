@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: SondeHub
-version: "1.0.0"
+version: "1.0.1"
 slug: sondehub
 description: >-
   Stream live radiosonde (weather balloon) telemetry from SondeHub to
@@ -10,9 +10,6 @@ url: "https://pypi.org/project/sondehub/"
 arch:
   - aarch64
   - amd64
-  - armhf
-  - armv7
-  - i386
 image: "ghcr.io/bencos17/{arch}-addon-sondehub"
 init: false
 options:
