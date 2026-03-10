@@ -15,6 +15,8 @@ Uses the official [sondehub Python SDK](https://pypi.org/project/sondehub/).
 
 ## Installation
 
-Add this repository to Home Assistant and install the **SondeHub** add-on.
+[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FBenCos17%2Fsondehub)
+
+Or manually add `https://github.com/BenCos17/sondehub` in Home Assistant → Settings → Add-ons → Add-on Store → ⋮ → Repositories, then install the **SondeHub** add-on.
 
 See [DOCS.md](DOCS.md) for full configuration instructions.
