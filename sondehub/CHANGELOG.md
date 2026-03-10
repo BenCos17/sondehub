@@ -1,4 +1,7 @@
 # Changelog
+## 1.0.8
+- Fix add-on schema parsing for area alert bounds to ensure add-on appears in the Home Assistant store.
+
 ## 1.0.7
 - Add configurable geofence area alerts using latitude/longitude min/max bounds.
 - Add global automation entities: `Any Radiosonde In Alert Area` and `Last Radiosonde In Alert Area`.
