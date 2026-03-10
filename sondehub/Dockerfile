@@ -2,10 +2,32 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install sondehub SDK and pin paho-mqtt to v1.x (sondehub 0.3.x requires the v1 API)
-RUN pip3 install --no-cache-dir \
-    "sondehub==0.3.2" \
-    "paho-mqtt<2.0"
+# Install system dependencies
+RUN apk add --no-cache \
+    gcc \
+    python3-dev \
+    py3-pip \
+    && rm -rf /var/cache/apk/*
 
-# Copy root filesystem
-COPY rootfs /
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir -r requirements.txt
+
+# Copy main script
+COPY rootfs/usr/bin/sondehub_addon.py /app/sondehub_addon.py
+
+# Copy s6 service files
+COPY rootfs/ /
+
+# Set permissions for s6 services
+RUN chmod a+x /etc/services.d/sondehub/run && \
+    chmod a+x /etc/services.d/sondehub/finish
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD pgrep -f "sondehub_addon.py" >/dev/null || exit 1

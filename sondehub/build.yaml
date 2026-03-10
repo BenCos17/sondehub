@@ -1,10 +1,10 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
 build_from:
-  aarch64: "ghcr.io/home-assistant/aarch64-base-python:3.12-alpine3.19"
-  amd64: "ghcr.io/home-assistant/amd64-base-python:3.12-alpine3.19"
-  armhf: "ghcr.io/home-assistant/armhf-base-python:3.12-alpine3.19"
-  armv7: "ghcr.io/home-assistant/armv7-base-python:3.12-alpine3.19"
-  i386: "ghcr.io/home-assistant/i386-base-python:3.12-alpine3.19"
+  aarch64: "ghcr.io/hassio-addons/base:18.1.1"
+  amd64: "ghcr.io/hassio-addons/base:18.1.1"
+  armhf: "ghcr.io/hassio-addons/base:18.1.1"
+  armv7: "ghcr.io/hassio-addons/base:18.1.1"
+  i386: "ghcr.io/hassio-addons/base:18.1.1"
 labels:
   org.opencontainers.image.title: "Home Assistant Add-on: SondeHub"
   org.opencontainers.image.description: "Stream live radiosonde telemetry from SondeHub to Home Assistant via MQTT."

@@ -1,0 +1,2 @@
+sondehub==0.3.2
+paho-mqtt<2.0
