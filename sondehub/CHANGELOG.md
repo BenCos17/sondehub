@@ -1,4 +1,17 @@
 # Changelog
+## 1.0.9
+- **[BREAKING] Complete device/entity restructure for better Home Assistant integration**:
+  - Each radiosonde now gets an individual device (grouped under SondeHub addon)
+  - Individual sensor entities per telemetry field (Temperature, Humidity, Altitude, Battery, etc.)
+  - Proper device classes and units for each sensor (temperature in °C, altitude in m, etc.)
+  - Diagnostic entities hidden by default to keep UI clean
+  - Location entity with GPS attributes for each sonde
+- Add **Auto-cleanup**: Radiosondes automatically removed after 30 minutes of silence (configurable)
+- Add **Max active sondes limit**: Prevent unlimited device creation if many sondes pass overhead (default: 20)
+- Add **Active Radiosondes overview**: Sensor on addon showing count and live data of all tracked sondes
+- Add configuration options: `max_active_sondes`, `sonde_timeout_minutes`, `announce_all_entities`
+- **Migration note**: Delete old devices manually after updating as the structure has changed significantly
+
 ## 1.0.8
 - Fix add-on schema parsing for area alert bounds to ensure add-on appears in the Home Assistant store.
 
@@ -18,7 +31,7 @@
 - Improve cleanup of old retained tracker discovery topics.
 
 ## 1.0.3
--# fix type just now also
+- fix type just now also
 - Group sensors under one device but seperate entities as it was causing issues in 1.0.1 
 
 ## 1.0.0

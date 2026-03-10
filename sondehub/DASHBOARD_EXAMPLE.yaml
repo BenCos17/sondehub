@@ -1,0 +1,194 @@
+# SondeHub Dashboard Example
+# This is a sample Home Assistant dashboard configuration for viewing active radiosondes
+# 
+# To use:
+# 1. Save this YAML to a file or copy the content
+# 2. In Home Assistant, go to Dashboard → Create Dashboard
+# 3. Switch to YAML mode and paste the content below
+# 4. Adjust entity names as needed if your MQTT prefix differs
+
+views:
+  - path: sondehub
+    title: SondeHub Live Telemetry
+    cards:
+      # Overview Cards
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            entity: sensor.active_radiosondes
+            name: Active Radiosondes
+            needle: true
+            min: 0
+            max: 30
+            unit: sondes
+            severity:
+              green: 1
+              yellow: 10
+              red: 20
+
+          - type: markdown
+            content: |
+              # Latest Sonde
+              **Serial:** {{ state_attr('sensor.latest_radiosonde', 'serial') if state_attr('sensor.latest_radiosonde', 'serial') else 'N/A' }}
+              **Type:** {{ state_attr('sensor.latest_radiosonde', 'type') if state_attr('sensor.latest_radiosonde', 'type') else 'N/A' }}
+              **Last Seen:** {{ state_attr('sensor.latest_radiosonde', 'last_seen') if state_attr('sensor.latest_radiosonde', 'last_seen') else 'N/A' }}
+
+      # Active Sondes Table
+      - type: entities
+        title: Active Radiosondes Details
+        entities:
+          - sensor.active_radiosondes
+        state_color: true
+
+      # Detailed Attributes Card (requires custom:config-template-card or similar)
+      - type: custom:template-entity-row
+        name: Active Sondes Summary
+        entity: sensor.active_radiosondes
+        state_color: true
+
+      # Alert Area Status (if configured)
+      - type: horizontal-stack
+        cards:
+          - type: button
+            entity: binary_sensor.any_radiosonde_in_alert_area
+            name: In Alert Area
+            show_state: true
+            state_color: true
+
+          - type: entities
+            title: Last in Alert Area
+            entities:
+              - sensor.last_radiosonde_in_alert_area
+
+      # Individual Sonde Examples (add more as needed)
+      - type: heading
+        heading: Sample Individual Sonde Cards
+
+      - type: horizontal-stack
+        cards:
+          # Sonde 1 - Key Metrics
+          - type: vertical-stack
+            cards:
+              - type: heading
+                heading: Radiosonde W34-123456 (Example)
+              
+              - type: horizontal-stack
+                cards:
+                  - type: gauge
+                    entity: sensor.radiosonde_w34_123456_altitude
+                    name: Altitude
+                    unit: m
+                    min: 0
+                    max: 35000
+                    severity:
+                      green: 0
+                      yellow: 10000
+                      red: 30000
+
+                  - type: gauge
+                    entity: sensor.radiosonde_w34_123456_temperature
+                    name: Temperature
+                    unit: "°C"
+                    min: -80
+                    max: 30
+                    severity:
+                      blue: -50
+                      cyan: -30
+                      green: 0
+                      yellow: 10
+
+                  - type: gauge
+                    entity: sensor.radiosonde_w34_123456_humidity
+                    name: Humidity
+                    unit: "%"
+                    min: 0
+                    max: 100
+                    severity:
+                      green: 30
+                      yellow: 60
+                      red: 80
+
+              - type: horizontal-stack
+                cards:
+                  - type: gauge
+                    entity: sensor.radiosonde_w34_123456_battery
+                    name: Battery
+                    unit: "%"
+                    min: 0
+                    max: 100
+                    severity:
+                      red: 20
+                      yellow: 50
+                      green: 75
+
+                  - type: entities
+                    title: Location
+                    entities:
+                      - device_tracker.radiosonde_w34_123456_location
+
+      # Map View (requires map-card)
+      - type: map
+        title: Radiosonde Locations
+        entities:
+          - device_tracker.radiosonde_w34_123456_location
+          # Add more device_tracker entities for additional sondes as needed
+
+      # Status Table
+      - type: entities
+        title: Sonde Status & Info
+        entities:
+          - sensor.radiosonde_w34_123456_status
+        state_color: true
+
+      # Advanced Metrics (if announce_all_entities: true)
+      - type: heading
+        heading: Advanced Telemetry (Optional)
+
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            entity: sensor.radiosonde_w34_123456_speed_horizontal
+            name: Horiz Speed
+            unit: m/s
+
+          - type: gauge
+            entity: sensor.radiosonde_w34_123456_speed_vertical
+            name: Vert Speed
+            unit: m/s
+
+          - type: gauge
+            entity: sensor.radiosonde_w34_123456_heading
+            name: Heading
+            unit: "°"
+
+          - type: gauge
+            entity: sensor.radiosonde_w34_123456_rssi
+            name: RSSI
+            unit: dBm
+
+      # Raw JSON view for debugging
+      - type: custom:auto-entities
+        filter:
+          template: |
+            {% set sondes = state_attr('sensor.active_radiosondes', 'radiosondes') | default([]) %}
+            {% if sondes | length > 0 %}
+              [
+              {% for sonde in sondes %}
+                "sensor.active_radiosondes"
+                {% if not loop.last %},{% endif %}
+              {% endfor %}
+              ]
+            {% else %}
+              []
+            {% endif %}
+        card:
+          type: entities
+          title: All Active Radiosondes (JSON)
+
+# Notes:
+# - Entity names will follow the pattern: sensor.radiosonde_<SERIAL>_<FIELD>
+# - Replace "w34_123456" with actual sonde serials
+# - Some cards (custom:template-entity-row, custom:auto-entities) require custom frontend components
+# - For a simpler setup, use the basic entities and gauge cards shown above
+# - The device_tracker for each sonde can be used with map-card for live location tracking
+# - Temperature gauge severity colors are examples; adjust to your preference
