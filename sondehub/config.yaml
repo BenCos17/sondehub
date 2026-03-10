@@ -1,0 +1,31 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
+name: SondeHub
+version: "1.0.0"
+slug: sondehub
+description: >-
+  Stream live radiosonde (weather balloon) telemetry from SondeHub to
+  Home Assistant via MQTT. Creates sensors and a device tracker for each
+  detected radiosonde.
+url: "https://pypi.org/project/sondehub/"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+init: false
+options:
+  mqtt_host: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_user: ""
+  mqtt_password: ""
+  amateur: false
+  filter_serials: []
+schema:
+  mqtt_host: str
+  mqtt_port: int
+  mqtt_user: str
+  mqtt_password: password
+  amateur: bool
+  filter_serials:
+    - str

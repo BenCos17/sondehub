@@ -1,0 +1,59 @@
+#include <tunables/global>
+
+profile sondehub flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  # Capabilities
+  file,
+  signal (send) set=(kill,term,int,hup,cont),
+
+  # S6-Overlay
+  /init ix,
+  /bin/** ix,
+  /usr/bin/** ix,
+  /run/{s6,s6-rc*,service}/** ix,
+  /package/** ix,
+  /command/** ix,
+  /etc/services.d/** rwix,
+  /etc/cont-init.d/** rwix,
+  /etc/cont-finish.d/** rwix,
+  /run/{,**} rwk,
+  /dev/tty rw,
+
+  # Bashio
+  /usr/lib/bashio/** ix,
+  /tmp/** rwk,
+
+  # Access to options.json and other add-on data
+  /data/** rw,
+
+  # Python interpreter and libraries
+  /usr/lib/python3*/** r,
+  /usr/local/lib/python3*/** r,
+
+  # Spawn Python for the main service
+  /usr/bin/python3* cx -> python3,
+
+  profile python3 flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    #include <abstractions/openssl>
+    #include <abstractions/ssl_certs>
+
+    # Receive signals from S6-Overlay
+    signal (receive) peer=*_sondehub,
+
+    # Add-on data directory
+    /data/** rw,
+    /tmp/** rwk,
+
+    # Python interpreter and installed packages
+    /usr/bin/python3* rix,
+    /usr/lib/python3*/** r,
+    /usr/local/lib/python3*/** r,
+
+    # Network: outbound to SondeHub MQTT (mqtt.sondehub.org:1883) and local HA MQTT broker
+    network inet stream,
+    network inet6 stream,
+  }
+}

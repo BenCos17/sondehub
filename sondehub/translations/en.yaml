@@ -1,0 +1,25 @@
+configuration:
+  mqtt_host:
+    name: MQTT Host
+    description: >-
+      Hostname or IP address of your MQTT broker.
+      Use "core-mosquitto" if you have the Mosquitto MQTT add-on installed.
+  mqtt_port:
+    name: MQTT Port
+    description: Port of the MQTT broker. Default is 1883.
+  mqtt_user:
+    name: MQTT Username
+    description: Username for MQTT authentication. Leave blank if not required.
+  mqtt_password:
+    name: MQTT Password
+    description: Password for MQTT authentication. Leave blank if not required.
+  amateur:
+    name: Amateur Launches
+    description: >-
+      Subscribe to amateur high-altitude balloon launches in addition to
+      the standard meteorological radiosonde feed.
+  filter_serials:
+    name: Filter by Serial Numbers
+    description: >-
+      Optional list of specific radiosonde serial numbers to track
+      (e.g. R3320848). Leave empty to receive all radiosondes worldwide.
