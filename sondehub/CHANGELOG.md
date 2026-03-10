@@ -1,6 +1,6 @@
 # Changelog
-## 1.0.2
-
+## 1.0.3
+-# fix type just now also
 - Group sensors under one device but seperate entities as it was causing issues in 1.0.1 
 
 ## 1.0.0
