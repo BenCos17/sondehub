@@ -25,23 +25,6 @@ log = logging.getLogger("sondehub_addon")
 
 OPTIONS_FILE = "/data/options.json"
 
-# SondeHub fields -> HA-friendly names (field, friendly_name, unit, device_class, icon)
-SENSOR_DEFS = [
-    ("altitude",         "Altitude",          "m",    "distance",      None),
-    ("temperature",      "Temperature",        "°C",   "temperature",   None),
-    ("humidity",         "Humidity",           "%",    "humidity",      None),
-    ("latitude",         "Latitude",           "°",    None,            "mdi:latitude"),
-    ("longitude",        "Longitude",          "°",    None,            "mdi:longitude"),
-    ("speed_horizontal", "Horizontal Speed",   "m/s",  None,            "mdi:speedometer"),
-    ("speed_vertical",   "Vertical Speed",     "m/s",  None,            "mdi:arrow-up-down"),
-    ("heading",          "Heading",            "°",    None,            "mdi:compass"),
-    ("satellites",       "GPS Satellites",     None,   None,            "mdi:satellite-variant"),
-    ("battery",          "Battery Voltage",    "V",    "voltage",       None),
-    ("frequency",        "Frequency",          "MHz",  "frequency",     None),
-    ("frame",            "Frame Number",       None,   None,            "mdi:counter"),
-    ("rssi",             "RSSI",               "dBm",  "signal_strength", None),
-]
-
 # Mapping of SondeHub API field names to the state dict keys used above
 FIELD_MAP = {
     "lat":      "latitude",
@@ -76,8 +59,10 @@ class SondeHubAddon:
         self.mqtt_password: str = opts.get("mqtt_password", "")
         self.amateur: bool = opts.get("amateur", False)
         self.filter_serials: list = opts.get("filter_serials", [])
+        self.min_publish_interval: int = max(0, int(opts.get("min_publish_interval", 10)))
 
         self.announced: set = set()
+        self.last_published: dict[str, float] = {}
         self.mqtt_client: mqtt.Client | None = None
         self.stream = None
         
@@ -128,31 +113,28 @@ class SondeHubAddon:
     # ------------------------------------------------------------------
 
     def _announce_sonde(self, serial: str, payload: dict) -> None:
-        """Publish MQTT Discovery configs for a newly seen radiosonde."""
+        """Publish MQTT Discovery config for a newly seen radiosonde."""
         safe = serial.replace("-", "_").replace(" ", "_").lower()
         state_topic = f"sondehub/{safe}/state"
 
-        # Remove old retained tracker discovery if it exists from previous versions.
+        # Remove old retained discovery entities from previous addon versions.
         self._publish(f"homeassistant/device_tracker/sondehub/{safe}/config", "", retain=True)
 
-        for field, friendly_name, unit, device_class, icon in SENSOR_DEFS:
-            cfg: dict = {
-                "name": f"{friendly_name}",
-                "unique_id": f"sondehub_{safe}_{field}",
-                "state_topic": state_topic,
-                "value_template": f"{{{{ value_json.{field} | default(none) }}}}",
-                "availability_topic": f"sondehub/{safe}/availability",
-                "device": self.addon_device,
-            }
-            if unit:
-                cfg["unit_of_measurement"] = unit
-            if device_class:
-                cfg["device_class"] = device_class
-            if icon:
-                cfg["icon"] = icon
+        for legacy_field in set(FIELD_MAP.values()):
+            self._publish(f"homeassistant/sensor/sondehub/{safe}_{legacy_field}/config", "", retain=True)
+            self._publish(f"homeassistant/sensor/sondehub/{safe}/{legacy_field}/config", "", retain=True)
 
-            disc_topic = f"homeassistant/sensor/sondehub/{safe}_{field}/config"
-            self._publish(disc_topic, cfg, retain=True)
+        cfg: dict = {
+            "name": f"Radiosonde {serial}",
+            "unique_id": f"sondehub_{safe}_summary",
+            "state_topic": state_topic,
+            "value_template": "{{ value_json.last_seen | default('unknown') }}",
+            "json_attributes_topic": state_topic,
+            "availability_topic": f"sondehub/{safe}/availability",
+            "icon": "mdi:weather-windy",
+            "device": self.addon_device,
+        }
+        self._publish(f"homeassistant/sensor/sondehub/{safe}_summary/config", cfg, retain=True)
 
         # Mark sonde as online
         self._publish(f"sondehub/{safe}/availability", "online", retain=True)
@@ -176,14 +158,23 @@ class SondeHubAddon:
         for src_key, dst_key in FIELD_MAP.items():
             raw = message.get(src_key)
             if raw not in INVALID_VALUES:
-                try:
+                if isinstance(raw, (int, float)):
                     state[dst_key] = round(float(raw), 6)
-                except (TypeError, ValueError):
-                    pass
+                elif isinstance(raw, str):
+                    try:
+                        state[dst_key] = round(float(raw), 6)
+                    except ValueError:
+                        pass
 
         state["last_seen"] = message.get("datetime", "")
         state["type"] = message.get("subtype", message.get("type", ""))
         state["uploader"] = message.get("uploader_callsign", "")
+
+        now = time.time()
+        last = self.last_published.get(serial, 0.0)
+        if now - last < self.min_publish_interval:
+            return
+        self.last_published[serial] = now
 
         # Publish state for this radiosonde
         self._publish(f"sondehub/{safe}/state", state)
@@ -227,7 +218,7 @@ class SondeHubAddon:
             kwargs["prefix"] = "amateur"
             log.info("Subscribing to amateur high-altitude balloon launches")
 
-        self.stream = sondehub_lib.Stream(**kwargs)
+        self.stream = sondehub_lib.Stream(**kwargs)  # type: ignore[attr-defined]
 
         log.info("SondeHub add-on running. Listening for radiosondes...")
 

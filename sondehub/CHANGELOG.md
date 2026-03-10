@@ -1,4 +1,9 @@
 # Changelog
+## 1.0.6
+- Add per-sonde publish rate limiting with new `min_publish_interval` option.
+- Change discovery model to one summary sensor per sonde with full telemetry in attributes.
+- Remove legacy retained per-field discovery entities from previous versions.
+
 ## 1.0.4
 - Remove MQTT device tracker discovery to avoid Away/Unknown-only entities.
 - Keep MQTT sensor discovery focused on telemetry entities.

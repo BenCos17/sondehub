@@ -13,6 +13,11 @@ configuration:
   mqtt_password:
     name: MQTT Password
     description: Password for MQTT authentication. Leave blank if not required.
+  min_publish_interval:
+    name: Minimum Publish Interval (seconds)
+    description: >-
+      Minimum time between MQTT state publishes per radiosonde.
+      Increase this to reduce MQTT traffic.
   amateur:
     name: Amateur Launches
     description: >-
