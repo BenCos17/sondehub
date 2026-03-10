@@ -13,6 +13,7 @@ arch:
   - armhf
   - armv7
   - i386
+image: "ghcr.io/bencos17/{arch}-addon-sondehub"
 init: false
 options:
   mqtt_host: "core-mosquitto"
