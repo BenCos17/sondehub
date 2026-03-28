@@ -1,4 +1,9 @@
 # Changelog
+## 1.0.11
+- Fix `Last Radiosonde In Alert Area` initial state to avoid `unknown` after startup.
+- Publish retained default payload to `sondehub/alerts/last_in_area` on startup.
+- Publish retained updates for `sondehub/alerts/last_in_area` when a sonde enters the alert area.
+
 ## 1.0.10
 - Fix Home Assistant MQTT discovery topic layout for per-radiosonde entities so sensors/device tracker are created reliably.
 - Add cleanup for retained discovery topics from the previous broken topic format.
