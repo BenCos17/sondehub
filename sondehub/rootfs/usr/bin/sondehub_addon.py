@@ -249,7 +249,7 @@ class SondeHubAddon:
             "name": "Last Radiosonde In Alert Area",
             "unique_id": "sondehub_last_in_alert_area",
             "state_topic": "sondehub/alerts/last_in_area",
-            "value_template": "{{ value_json.serial | default('none') }}",
+            "value_template": "{{ value_json.serial | default('none', true) }}",
             "json_attributes_topic": "sondehub/alerts/last_in_area",
             "availability_topic": "sondehub/global/availability",
             "icon": "mdi:crosshairs-gps",
@@ -426,7 +426,7 @@ class SondeHubAddon:
                         "last_seen": state.get("last_seen", ""),
                         "count_in_area": len(self.sondes_in_area),
                     }
-                    self._publish("sondehub/alerts/last_in_area", area_payload)
+                    self._publish("sondehub/alerts/last_in_area", area_payload, retain=True)
                 else:
                     self.sondes_in_area.discard(serial)
 
@@ -472,6 +472,11 @@ class SondeHubAddon:
         self._announce_global_entities()
         self._publish("sondehub/global/availability", "online", retain=True)
         self._publish("sondehub/alerts/in_area", "OFF", retain=True)
+        self._publish(
+            "sondehub/alerts/last_in_area",
+            {"serial": "none", "count_in_area": 0},
+            retain=True,
+        )
 
         log.info("Starting SondeHub stream...")
         log.info("Configuration: max_active_sondes=%d, timeout=%d min", self.max_active_sondes, self.sonde_timeout_minutes)
