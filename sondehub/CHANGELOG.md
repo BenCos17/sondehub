@@ -1,4 +1,9 @@
 # Changelog
+
+## 1.0.12 
+- bump home assistant builder version
+- 
+
 ## 1.0.11
 - Fix `Last Radiosonde In Alert Area` initial state to avoid `unknown` after startup.
 - Publish retained default payload to `sondehub/alerts/last_in_area` on startup.

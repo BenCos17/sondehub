@@ -67,6 +67,7 @@ jobs:
         arch: ["aarch64", "amd64"]
     permissions:
       contents: read
+      id-token: write
       packages: write
 
     steps:
@@ -87,7 +88,10 @@ jobs:
             echo "build_arch=false" >> $GITHUB_OUTPUT;
           elif [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
             echo "build_arch=true" >> $GITHUB_OUTPUT;
-            echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
+            image_name="$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)"
+            image_name="${image_name//\{arch\}/${{ matrix.arch }}}"
+            echo "image=${image_name}" >> $GITHUB_OUTPUT;
+            echo "image_full=ghcr.io/${{ github.repository_owner }}/${image_name}" >> $GITHUB_OUTPUT;
             if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
                 echo "BUILD_ARGS=" >> $GITHUB_ENV;
             fi
@@ -96,22 +100,16 @@ jobs:
             echo "build_arch=false" >> $GITHUB_OUTPUT;
           fi
 
-      - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@v4.0.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2026.03.2
+        uses: home-assistant/builder/actions/build-image@2026.03.2
         with:
-          args: |
-            ${{ env.BUILD_ARGS }} \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          arch: ${{ matrix.arch }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ steps.check.outputs.image_full }}
+          image-tags: |
+            ${{ steps.info.outputs.version }}
+            latest
+          context: ./${{ matrix.addon }}
+          push: ${{ env.BUILD_ARGS != '--test' && 'true' || 'false' }}
+          version: ${{ steps.info.outputs.version }}
