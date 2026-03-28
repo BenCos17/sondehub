@@ -1,4 +1,9 @@
 # Changelog
+## 1.0.10
+- Fix Home Assistant MQTT discovery topic layout for per-radiosonde entities so sensors/device tracker are created reliably.
+- Add cleanup for retained discovery topics from the previous broken topic format.
+- Add missing add-on config schema keys for `max_active_sondes`, `sonde_timeout_minutes`, and `announce_all_entities`.
+
 ## 1.0.9
 - **[BREAKING] Complete device/entity restructure for better Home Assistant integration**:
   - Each radiosonde now gets an individual device (grouped under SondeHub addon)

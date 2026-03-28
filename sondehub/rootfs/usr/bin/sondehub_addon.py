@@ -281,6 +281,8 @@ class SondeHubAddon:
 
         # Remove old retained discovery entities from previous addon versions.
         self._publish(f"homeassistant/device_tracker/sondehub/{safe}/config", "", retain=True)
+        self._publish(f"homeassistant/device_tracker/sondehub/{safe}/location/config", "", retain=True)
+        self._publish(f"homeassistant/sensor/sondehub/{safe}/status/config", "", retain=True)
         for legacy_field in set(FIELD_MAP.values()):
             self._publish(f"homeassistant/sensor/sondehub/{safe}_{legacy_field}/config", "", retain=True)
             self._publish(f"homeassistant/sensor/sondehub/{safe}/{legacy_field}/config", "", retain=True)
@@ -316,7 +318,8 @@ class SondeHubAddon:
             if icon:
                 cfg["icon"] = icon
             
-            self._publish(f"homeassistant/sensor/sondehub/{safe}/{entity_name}/config", cfg, retain=True)
+            # Discovery topic must be <prefix>/<component>/<node_id>/<object_id>/config.
+            self._publish(f"homeassistant/sensor/sondehub/{safe}_{entity_name}/config", cfg, retain=True)
 
         # Create an info sensor showing last update time
         info_cfg: dict = {
@@ -331,7 +334,7 @@ class SondeHubAddon:
             "entity_category": "diagnostic",
             "device": sonde_device,
         }
-        self._publish(f"homeassistant/sensor/sondehub/{safe}/status/config", info_cfg, retain=True)
+        self._publish(f"homeassistant/sensor/sondehub/{safe}_status/config", info_cfg, retain=True)
 
         # Create a device tracker for location
         tracker_cfg: dict = {
@@ -348,7 +351,8 @@ class SondeHubAddon:
             "icon": "mdi:map-marker",
             "device": sonde_device,
         }
-        self._publish(f"homeassistant/device_tracker/sondehub/{safe}/location/config", tracker_cfg, retain=True)
+        # Discovery topic must be <prefix>/<component>/<node_id>/<object_id>/config.
+        self._publish(f"homeassistant/device_tracker/sondehub/{safe}_location/config", tracker_cfg, retain=True)
 
         # Mark sonde as online
         self._publish(f"sondehub/{safe}/availability", "online", retain=True)
